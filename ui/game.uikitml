@@ -1,0 +1,127 @@
+<style>
+  .panel-container {
+    align-items: flex-start;
+    padding: 2;
+    width: 50;
+    display: flex;
+    flex-direction: column;
+    background-color: #09090b;
+    border-color: #27272a;
+    border-width: 0.15;
+    border-radius: 3;
+  }
+
+  .heading {
+    font-size: 4;
+    font-weight: medium;
+    color: #fafafa;
+    text-align: left;
+  }
+
+  .status {
+    font-size: 2.5;
+    color: #fafafa;
+    text-align: left;
+    margin-top: 1;
+  }
+
+  .score-row {
+    font-size: 2.2;
+    color: #a1a1aa;
+    text-align: left;
+    margin-top: 0.5;
+  }
+
+  .lb-heading {
+    font-size: 2.2;
+    font-weight: medium;
+    color: #fafafa;
+    text-align: left;
+    margin-top: 1.5;
+  }
+
+  .lb-row {
+    font-size: 2;
+    color: #a1a1aa;
+    text-align: left;
+    margin-top: 0.3;
+  }
+
+  .section-heading {
+    font-size: 2;
+    color: #a1a1aa;
+    text-align: left;
+    margin-top: 1.5;
+  }
+
+  .button-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 0.5;
+  }
+
+  .option-button {
+    flex-grow: 1;
+    margin-right: 0.5;
+    padding: 1;
+    background-color: #27272a;
+    color: #fafafa;
+    border-radius: 1;
+    border-width: 0.1;
+    border-color: #3f3f46;
+    font-size: 2;
+    font-weight: medium;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .action-button {
+    width: 100%;
+    padding: 1.5;
+    margin-top: 2;
+    background-color: #fafafa;
+    color: #09090b;
+    border-radius: 1.5;
+    border-width: 0.1;
+    border-color: #e4e4e7;
+    font-size: 2.5;
+    font-weight: medium;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  #replace-board {
+    margin-top: 1;
+    background-color: #27272a;
+    color: #fafafa;
+  }
+</style>
+<div class="panel-container">
+  <span class="heading">Tic-Tac-Toe vs AI</span>
+  <span id="status" class="status">Place the board on a surface</span>
+
+  <span class="section-heading">Play as</span>
+  <div class="button-row">
+    <button id="symbol-x" class="option-button">X</button>
+    <button id="symbol-o" class="option-button">O</button>
+  </div>
+
+  <span class="section-heading">Difficulty</span>
+  <div class="button-row">
+    <button id="diff-easy" class="option-button">Easy</button>
+    <button id="diff-medium" class="option-button">Medium</button>
+    <button id="diff-hard" class="option-button">Hard</button>
+  </div>
+
+  <span id="score" class="score-row">Streak: 0    Best: 0</span>
+  <span class="lb-heading">Leaderboard</span>
+  <span id="lb-row-0" class="lb-row"></span>
+  <span id="lb-row-1" class="lb-row"></span>
+  <span id="lb-row-2" class="lb-row"></span>
+  <span id="lb-row-3" class="lb-row"></span>
+  <span id="lb-row-4" class="lb-row"></span>
+  <button id="play-again" class="action-button">Play Again</button>
+  <button id="replace-board" class="action-button">Replace Board</button>
+  <button id="xr-button" class="action-button">Enter XR</button>
+</div>
