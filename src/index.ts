@@ -17,7 +17,7 @@ import { GameLogicSystem } from "./game.js";
 import { GamePanelSystem } from "./game-panel.js";
 import { getGlobals } from "./globals.js";
 import { PlacementSystem } from "./placement.js";
-import { setupIOSXRSupport } from "./platform.js";
+import { installIOSTapFallback, setupIOSXRSupport } from "./platform.js";
 import { Robot, RobotSystem } from "./robot.js";
 import { ScoreSystem } from "./score.js";
 import { ScreenInputSystem } from "./screen-input.js";
@@ -64,6 +64,8 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
     environmentRaycast: true,
   },
 }).then((world) => {
+  installIOSTapFallback(world.renderer.domElement);
+
   const { camera } = world;
 
   camera.position.set(0, 1, 0.5);
@@ -119,4 +121,11 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
     .registerSystem(ScoreSystem, { priority: 2 })
     .registerSystem(RobotSystem, { priority: 10 })
     .registerSystem(GamePanelSystem, { priority: 40 });
+
+  // Read by the ?debug overlay in index.html.
+  (window as { __bootStatus?: string }).__bootStatus = "ready";
+}).catch((error) => {
+  (window as { __bootStatus?: string }).__bootStatus =
+    `FAILED: ${error instanceof Error ? error.message : String(error)}`;
+  throw error;
 });

@@ -7,6 +7,50 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
     />
     <title>Tictactoe</title>
+    <script>
+      // Remote debugging aid: open the site with ?debug in the URL to show a
+      // live overlay of input events, JS errors, and app boot status.
+      (function () {
+        if (!/[?&]debug/.test(location.search)) return;
+        var el = document.createElement("div");
+        el.style.cssText =
+          "position:fixed;top:0;left:0;right:0;z-index:99999;background:rgba(0,0,0,.85);" +
+          "color:#0f0;font:12px/1.4 monospace;padding:6px;pointer-events:none;white-space:pre-wrap;";
+        var counts = {
+          touchstart: 0,
+          touchend: 0,
+          pointerdown: 0,
+          pointerup: 0,
+          pointercancel: 0,
+          click: 0,
+        };
+        var errors = [];
+        function render() {
+          var line = Object.keys(counts)
+            .map(function (k) { return k + ":" + counts[k]; })
+            .join("  ");
+          el.textContent =
+            "boot:" + (window.__bootStatus || "starting") + "\n" + line +
+            (errors.length ? "\nERR " + errors.slice(-3).join(" | ") : "");
+        }
+        Object.keys(counts).forEach(function (t) {
+          window.addEventListener(t, function () { counts[t]++; render(); }, true);
+        });
+        window.addEventListener("error", function (e) {
+          errors.push(e.message || "unknown error");
+          render();
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          var r = e.reason;
+          errors.push((r && r.message) || String(r));
+          render();
+        });
+        setInterval(render, 500);
+        function attach() { document.body.appendChild(el); render(); }
+        if (document.body) attach();
+        else document.addEventListener("DOMContentLoaded", attach);
+      })();
+    </script>
     <style>
       html,
       body {
