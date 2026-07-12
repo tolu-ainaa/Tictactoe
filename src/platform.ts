@@ -40,8 +40,14 @@ export async function supportsImmersiveAR(): Promise<boolean> {
  * queries `navigator.xr`. Resolves either way — the app always continues
  * into the 2D fallback if AR isn't available.
  */
+// Client-side key (ships in the bundle by design; Variant scopes it to the
+// domains registered in the Launch admin). VITE_VARIANT_LAUNCH_KEY overrides.
+const DEFAULT_VARIANT_LAUNCH_KEY = "rKkoCAdleySa9U84SoC2979uY1K10ltb";
+
 export async function setupIOSXRSupport(): Promise<void> {
-  const key = import.meta.env.VITE_VARIANT_LAUNCH_KEY as string | undefined;
+  const key =
+    (import.meta.env.VITE_VARIANT_LAUNCH_KEY as string | undefined) ||
+    DEFAULT_VARIANT_LAUNCH_KEY;
   if (!key || !isIOS() || (await supportsImmersiveAR())) {
     return;
   }

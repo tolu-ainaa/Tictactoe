@@ -4,11 +4,36 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
     />
     <title>Tictactoe</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overscroll-behavior: none;
+      }
+      /* touch-action: none is required for taps to reach the canvas on iOS
+         Safari — without it, WebKit claims touches for scroll/double-tap-zoom
+         gestures and fires pointercancel, so panel buttons never get clicks. */
+      #scene-container,
+      #scene-container canvas {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #scene-container {
+        position: fixed;
+        inset: 0;
+      }
+      #scene-container canvas {
+        display: block;
+      }
+    </style>
   </head>
-  <body style="margin: 0">
+  <body>
     <div id="scene-container"></div>
     <script type="module" src="/src/index.ts"></script>
   </body>
