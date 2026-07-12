@@ -11,11 +11,12 @@ import { getGlobals } from "./globals.js";
 import { PlacementSystem } from "./placement.js";
 
 /**
- * Phone AR input. On handheld AR (Android Chrome), screen taps arrive as
- * transient XR input sources with `targetRayMode: "screen"` — the SDK's
- * gamepad/Interactable pipeline only tracks left/right sources, so taps never
- * produce Hovered/Pressed. This system listens to session `select` events and
- * routes taps by game phase:
+ * Phone AR input. On handheld AR (Android Chrome screen taps, Variant Launch's
+ * iOS App Clip polyfill, visionOS transient pointers), selects arrive from
+ * input sources with `handedness: "none"` — the SDK's gamepad/Interactable
+ * pipeline only tracks left/right sources, so these never produce
+ * Hovered/Pressed. This system listens to session `select` events and routes
+ * them by game phase:
  *
  * - placement  → confirm the ghost preview (PlacementSystem)
  * - player-turn → raycast the tap against board cells and play the move
@@ -58,7 +59,11 @@ export class ScreenInputSystem extends createSystem({}) {
   }
 
   private handleSelect(event: XRInputSourceEvent) {
-    if (event.inputSource.targetRayMode !== "screen") {
+    // Left/right sources (controllers, hands) are handled by the SDK's input
+    // pipeline. Everything else — Android Chrome screen taps, Variant Launch's
+    // iOS polyfill, visionOS transient pointers — is ours.
+    const { handedness } = event.inputSource;
+    if (handedness === "left" || handedness === "right") {
       return;
     }
 

@@ -17,6 +17,7 @@ import { GameLogicSystem } from "./game.js";
 import { GamePanelSystem } from "./game-panel.js";
 import { getGlobals } from "./globals.js";
 import { PlacementSystem } from "./placement.js";
+import { setupIOSXRSupport } from "./platform.js";
 import { Robot, RobotSystem } from "./robot.js";
 import { ScoreSystem } from "./score.js";
 import { ScreenInputSystem } from "./screen-input.js";
@@ -33,6 +34,10 @@ const assets: AssetManifest = {
     priority: "critical",
   },
 };
+
+// On iOS, the Variant Launch polyfill (if configured) must be in place before
+// the engine looks at navigator.xr.
+await setupIOSXRSupport();
 
 World.create(document.getElementById("scene-container") as HTMLDivElement, {
   assets,
