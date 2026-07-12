@@ -33,7 +33,7 @@ export class GameLogicSystem extends createSystem({
 
   init() {
     this.queries.pressedEmpty.subscribe("qualify", (entity) => {
-      this.handlePlayerMove(entity);
+      this.tryPlayerMove(entity);
     });
   }
 
@@ -88,9 +88,17 @@ export class GameLogicSystem extends createSystem({
     }
   }
 
-  private handlePlayerMove(cellEntity: Entity) {
+  /**
+   * Attempts a player move on the given cell. Guards phase and cell ownership
+   * itself, so it's safe to call from any input path (Pressed query on headset,
+   * ScreenInputSystem tap raycasts on phone AR).
+   */
+  tryPlayerMove(cellEntity: Entity) {
     const globals = getGlobals(this.world);
     if (globals.gamePhase.peek() !== "player-turn") {
+      return;
+    }
+    if (cellEntity.getValue(BoardCell, "owner") !== "none") {
       return;
     }
 

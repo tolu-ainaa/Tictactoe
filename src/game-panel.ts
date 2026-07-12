@@ -15,7 +15,7 @@ import type { GamePhase, LeaderboardEntry, Symbol, Winner } from "./globals.js";
 import { PlacementSystem } from "./placement.js";
 
 const STATUS_TEXT: Record<GamePhase, string> = {
-  placement: "Place the board on a surface",
+  placement: "Look at a surface, pinch to place the board",
   "player-turn": "Your turn",
   "ai-thinking": "AI is thinking...",
   "game-over": "",

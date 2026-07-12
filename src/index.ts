@@ -19,6 +19,7 @@ import { getGlobals } from "./globals.js";
 import { PlacementSystem } from "./placement.js";
 import { Robot, RobotSystem } from "./robot.js";
 import { ScoreSystem } from "./score.js";
+import { ScreenInputSystem } from "./screen-input.js";
 
 const assets: AssetManifest = {
   chimeSound: {
@@ -38,9 +39,12 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
   xr: {
     sessionMode: SessionMode.ImmersiveAR,
     offer: "always",
+    // All features optional so the same build runs on Quest (hands, planes, meshes)
+    // and on phone AR (Android Chrome), which supports none of those but does
+    // support hit-test — the only feature placement actually depends on.
     features: {
-      handTracking: { required: true },
-      anchors: { required: true },
+      handTracking: true,
+      anchors: true,
       hitTest: true,
       planeDetection: true,
       meshDetection: true,
@@ -104,6 +108,7 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
   panelEntity.object3D!.position.set(0, 1.29, -1.9);
 
   world
+    .registerSystem(ScreenInputSystem, { priority: 0 })
     .registerSystem(PlacementSystem, { priority: 0 })
     .registerSystem(GameLogicSystem, { priority: 1 })
     .registerSystem(ScoreSystem, { priority: 2 })

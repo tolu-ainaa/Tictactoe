@@ -4,18 +4,24 @@ import { compileUIKit } from "@iwsdk/vite-plugin-uikitml";
 import { defineConfig } from "vite";
 import mkcert from "vite-plugin-mkcert";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
-    mkcert(),
-    iwsdkDev({
-      emulator: {
-        device: "metaQuest3",
+    // Dev-only: local HTTPS cert + IWER emulator injection. Must not run in
+    // production builds (e.g. on Vercel).
+    ...(command === "serve"
+      ? [
+          mkcert(),
+          iwsdkDev({
+            emulator: {
+              device: "metaQuest3",
 
-        environment: "living_room",
-      },
-      ai: { mode: "agent" },
-      verbose: true,
-    }),
+              environment: "living_room",
+            },
+            ai: { mode: "agent" },
+            verbose: true,
+          }),
+        ]
+      : []),
 
     compileUIKit({ sourceDir: "ui", outputDir: "public/ui", verbose: true }),
   ],
@@ -33,4 +39,4 @@ export default defineConfig({
   },
   publicDir: "public",
   base: "./",
-});
+}));
