@@ -76,6 +76,32 @@ export class GamePanelSystem extends createSystem({
         statusText.setProperties({ text });
       };
 
+      // Show a transient message in the status line, then restore the
+      // phase-driven text. Gives every button press visible feedback so
+      // no-op states don't read as broken buttons.
+      let flashTimer: ReturnType<typeof setTimeout> | undefined;
+      const flashStatus = (text: string) => {
+        statusText.setProperties({ text });
+        clearTimeout(flashTimer);
+        flashTimer = setTimeout(updateStatus, 2500);
+      };
+
+      // Detect AR support up front so the XR button can say so instead of
+      // silently failing (e.g. desktop browsers, iOS Safari outside the
+      // Launch viewer).
+      let arSupported: boolean | null = null;
+      navigator.xr
+        ?.isSessionSupported?.("immersive-ar")
+        .then((supported) => {
+          arSupported = supported;
+          if (!supported) {
+            xrButton.setProperties({ text: "AR Not Available Here" });
+          }
+        })
+        .catch(() => {
+          arSupported = false;
+        });
+
       const updateScore = () => {
         scoreText.setProperties({
           text: `Streak: ${globals.currentStreak.peek()}    Best: ${globals.highScore.peek()}`,
@@ -118,9 +144,11 @@ export class GamePanelSystem extends createSystem({
       );
 
       symbolButtons.X.addEventListener("click", () => {
+        console.log("[panel] X clicked");
         globals.playerSymbol.value = "X";
       });
       symbolButtons.O.addEventListener("click", () => {
+        console.log("[panel] O clicked");
         globals.playerSymbol.value = "O";
       });
 
@@ -135,23 +163,52 @@ export class GamePanelSystem extends createSystem({
       });
 
       playAgainButton.addEventListener("click", () => {
+        console.log("[panel] play-again clicked");
+        if (!globals.boardRoot.peek()) {
+          flashStatus(
+            this.world.visibilityState.value === VisibilityState.NonImmersive
+              ? "Enter XR first — the board is placed in AR"
+              : "No board yet — aim at a surface to place it",
+          );
+          return;
+        }
         this.world.getSystem(GameLogicSystem)?.resetGame();
+        flashStatus("New round!");
       });
 
       replaceBoardButton.addEventListener("click", () => {
+        console.log("[panel] replace-board clicked");
+        if (this.world.visibilityState.value === VisibilityState.NonImmersive) {
+          flashStatus("Enter XR first — the board is placed in AR");
+          return;
+        }
+        const hadBoard = !!globals.boardRoot.peek();
         this.world.getSystem(PlacementSystem)?.requestPlacement();
+        if (hadBoard) {
+          flashStatus("Pick a new spot for the board");
+        }
       });
 
       xrButton.addEventListener("click", () => {
-        if (this.world.visibilityState.value === VisibilityState.NonImmersive) {
-          this.world.launchXR();
-        } else {
+        console.log("[panel] xr-button clicked");
+        if (this.world.visibilityState.value !== VisibilityState.NonImmersive) {
           this.world.exitXR();
+          return;
         }
+        if (arSupported === false) {
+          flashStatus(
+            "No AR in this browser — use Android Chrome, Quest, or the iOS App Clip link",
+          );
+          return;
+        }
+        flashStatus("Starting AR...");
+        this.world.launchXR();
       });
       this.world.visibilityState.subscribe((visibilityState) => {
         if (visibilityState === VisibilityState.NonImmersive) {
-          xrButton.setProperties({ text: "Enter XR" });
+          xrButton.setProperties({
+            text: arSupported === false ? "AR Not Available Here" : "Enter XR",
+          });
         } else {
           xrButton.setProperties({ text: "Exit to Browser" });
         }
