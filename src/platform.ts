@@ -77,6 +77,21 @@ export async function launchVariantAR(world: World): Promise<boolean> {
       }
     }
 
+    // IWSDK only hides the sky dome when environmentBlendMode reports an AR
+    // mode; if the polyfill reports 'opaque' (or omits it), the sky is drawn
+    // over the camera feed and the user sees sky instead of passthrough.
+    const blendMode = session.environmentBlendMode as string | undefined;
+    if (!blendMode || blendMode === "opaque") {
+      try {
+        Object.defineProperty(session, "environmentBlendMode", {
+          value: "alpha-blend",
+          configurable: true,
+        });
+      } catch {
+        /* best effort */
+      }
+    }
+
     const xrManager = world.renderer.xr as unknown as {
       getDepthSensingMesh: () => unknown;
       setReferenceSpaceType: (type: XRReferenceSpaceType) => void;
