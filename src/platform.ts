@@ -1,3 +1,5 @@
+import type { World } from "@iwsdk/core";
+
 /**
  * Platform detection and iOS WebXR bootstrapping.
  *
@@ -40,6 +42,63 @@ export async function supportsImmersiveAR(): Promise<boolean> {
  * queries `navigator.xr`. Resolves either way — the app always continues
  * into the 2D fallback if AR isn't available.
  */
+// The exact feature set Variant's Launch viewer documents for its polyfill.
+// Anything else (local-floor, layers, plane-detection...) is IWSDK's default
+// request shape, which the viewer starts a session for but WITHOUT hit-test —
+// leaving placement silently dead.
+const VARIANT_SESSION_FEATURES = ["local", "anchors", "dom-overlay", "hit-test"];
+
+/**
+ * Starts an immersive-ar session tailored to the Variant Launch viewer and
+ * hands it to the IWSDK renderer (mirroring what `world.launchXR()` does after
+ * `requestSession`). Returns false if the session couldn't start, so callers
+ * can fall back to the standard launch path.
+ */
+export async function launchVariantAR(world: World): Promise<boolean> {
+  if (!navigator.xr?.requestSession) {
+    return false;
+  }
+  try {
+    const session = await navigator.xr.requestSession("immersive-ar", {
+      requiredFeatures: VARIANT_SESSION_FEATURES,
+      domOverlay: { root: document.body },
+    } as XRSessionInit);
+
+    // IWSDK's EnvironmentRaycastSystem checks session.enabledFeatures for
+    // 'hit-test' and disables itself when absent — polyfills often omit it.
+    if (!session.enabledFeatures) {
+      try {
+        Object.defineProperty(session, "enabledFeatures", {
+          value: VARIANT_SESSION_FEATURES,
+          configurable: true,
+        });
+      } catch {
+        /* best effort */
+      }
+    }
+
+    const xrManager = world.renderer.xr as unknown as {
+      getDepthSensingMesh: () => unknown;
+      setReferenceSpaceType: (type: XRReferenceSpaceType) => void;
+      setSession: (session: XRSession) => Promise<void>;
+    };
+    xrManager.getDepthSensingMesh = () => null;
+    xrManager.setReferenceSpaceType("local"); // the viewer only supports 'local'
+    await xrManager.setSession(session);
+    world.session = session;
+
+    const onEnd = () => {
+      session.removeEventListener("end", onEnd);
+      world.session = undefined;
+    };
+    session.addEventListener("end", onEnd);
+    return true;
+  } catch (error) {
+    console.warn("[platform] Variant Launch AR session failed:", error);
+    return false;
+  }
+}
+
 /**
  * iOS Safari tap reliability for the canvas-forwarded pointer pipeline.
  *
@@ -126,7 +185,19 @@ export async function setupIOSXRSupport(): Promise<void> {
   const key =
     (import.meta.env.VITE_VARIANT_LAUNCH_KEY as string | undefined) ||
     DEFAULT_VARIANT_LAUNCH_KEY;
-  if (!key || !isIOS() || (await supportsImmersiveAR())) {
+  if (!isIOS()) {
+    return;
+  }
+
+  // Surface ARKit tracking state in the ?debug overlay (fires inside the
+  // Launch viewer; harmless elsewhere).
+  document.addEventListener("vlaunch-ar-tracking", (event) => {
+    const detail = (event as CustomEvent).detail;
+    (window as { __vlTracking?: string }).__vlTracking =
+      typeof detail === "string" ? detail : JSON.stringify(detail);
+  });
+
+  if (!key || (await supportsImmersiveAR())) {
     return;
   }
 

@@ -31,6 +31,7 @@
             .join("  ");
           el.textContent =
             "boot:" + (window.__bootStatus || "starting") + "\n" + line +
+            (window.__vlTracking ? "\nvl-tracking:" + window.__vlTracking : "") +
             (errors.length ? "\nERR " + errors.slice(-3).join(" | ") : "");
         }
         Object.keys(counts).forEach(function (t) {

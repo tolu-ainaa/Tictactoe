@@ -13,6 +13,7 @@ import { GameLogicSystem } from "./game.js";
 import { getGlobals } from "./globals.js";
 import type { GamePhase, LeaderboardEntry, Symbol, Winner } from "./globals.js";
 import { PlacementSystem } from "./placement.js";
+import { isIOS, launchVariantAR } from "./platform.js";
 
 const STATUS_TEXT: Record<GamePhase, string> = {
   placement: "Look at a surface, pinch to place the board",
@@ -202,7 +203,17 @@ export class GamePanelSystem extends createSystem({
           return;
         }
         flashStatus("Starting AR...");
-        this.world.launchXR();
+        if (isIOS()) {
+          // Inside the Variant Launch viewer the session must be requested
+          // with its documented feature set, or hit-test never activates.
+          launchVariantAR(this.world).then((started) => {
+            if (!started) {
+              this.world.launchXR();
+            }
+          });
+        } else {
+          this.world.launchXR();
+        }
       });
       this.world.visibilityState.subscribe((visibilityState) => {
         if (visibilityState === VisibilityState.NonImmersive) {
