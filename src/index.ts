@@ -16,6 +16,7 @@ import { signal } from "@preact/signals-core";
 import { GameLogicSystem } from "./game.js";
 import { GamePanelSystem } from "./game-panel.js";
 import { getGlobals } from "./globals.js";
+import { OnlineMatchSystem } from "./network.js";
 import { PlacementSystem } from "./placement.js";
 import { installIOSTapFallback, setupIOSXRSupport } from "./platform.js";
 import { Robot, RobotSystem } from "./robot.js";
@@ -85,6 +86,16 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
   globals.activePlayerSymbol = signal("X");
   globals.nextStarter = signal("player");
 
+  // Opening a shared link (?room=CODE) joins that room as guest.
+  const roomParam = new URLSearchParams(location.search).get("room");
+  const room = roomParam ? roomParam.toUpperCase().slice(0, 8) : null;
+  globals.turnSymbol = signal("X");
+  globals.gameMode = signal(room ? "online" : "ai");
+  globals.onlineRoom = signal(room);
+  globals.onlineRole = signal(room ? "guest" : null);
+  globals.onlinePeer = signal(false);
+  globals.onlineStatus = signal("idle");
+
   const { scene: robotMesh } = AssetManager.getGLTF("robot")!;
   robotMesh.position.set(-0.5, 0.15, -0.8);
   robotMesh.scale.setScalar(0.5);
@@ -117,6 +128,7 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
   world
     .registerSystem(ScreenInputSystem, { priority: 0 })
     .registerSystem(PlacementSystem, { priority: 0 })
+    .registerSystem(OnlineMatchSystem, { priority: 0 })
     .registerSystem(GameLogicSystem, { priority: 1 })
     .registerSystem(ScoreSystem, { priority: 2 })
     .registerSystem(RobotSystem, { priority: 10 })
@@ -124,6 +136,13 @@ World.create(document.getElementById("scene-container") as HTMLDivElement, {
 
   // Read by the ?debug overlay in index.html.
   (window as { __bootStatus?: string }).__bootStatus = "ready";
+
+  // TEMP dev-only test hook: auto-enter online mode shortly after boot.
+  if (import.meta.env.DEV) {
+    setTimeout(() => {
+      globals.gameMode.value = "online";
+    }, 8000);
+  }
 }).catch((error) => {
   (window as { __bootStatus?: string }).__bootStatus =
     `FAILED: ${error instanceof Error ? error.message : String(error)}`;

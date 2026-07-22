@@ -42,6 +42,10 @@ export class ScoreSystem extends createSystem({}) {
 
   private handleGameOver() {
     const globals = getGlobals(this.world);
+    // Streaks are a vs-AI concept; PvP rounds don't touch them.
+    if (globals.gameMode.peek() !== "ai") {
+      return;
+    }
     const winner = globals.lastWinner.peek();
     if (winner === null) {
       return;

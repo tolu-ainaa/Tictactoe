@@ -98,17 +98,25 @@
   }
 </style>
 <div class="panel-container">
-  <span class="heading">Tic-Tac-Toe vs AI</span>
+  <span class="heading">Tic-Tac-Toe</span>
   <span id="status" class="status">Place the board on a surface</span>
 
-  <span class="section-heading">Play as</span>
+  <span class="section-heading">Mode</span>
   <div class="button-row">
+    <button id="mode-ai" class="option-button">vs AI</button>
+    <button id="mode-local" class="option-button">Pass &amp; Play</button>
+    <button id="mode-online" class="option-button">Online</button>
+  </div>
+  <span id="online-info" class="score-row">...</span>
+
+  <span id="sym-heading" class="section-heading">Play as</span>
+  <div id="sym-row" class="button-row">
     <button id="symbol-x" class="option-button">X</button>
     <button id="symbol-o" class="option-button">O</button>
   </div>
 
-  <span class="section-heading">Difficulty</span>
-  <div class="button-row">
+  <span id="diff-heading" class="section-heading">Difficulty</span>
+  <div id="diff-row" class="button-row">
     <button id="diff-easy" class="option-button">Easy</button>
     <button id="diff-medium" class="option-button">Medium</button>
     <button id="diff-hard" class="option-button">Hard</button>
@@ -116,11 +124,11 @@
 
   <span id="score" class="score-row">Streak: 0    Best: 0</span>
   <span class="lb-heading">Leaderboard</span>
-  <span id="lb-row-0" class="lb-row"></span>
-  <span id="lb-row-1" class="lb-row"></span>
-  <span id="lb-row-2" class="lb-row"></span>
-  <span id="lb-row-3" class="lb-row"></span>
-  <span id="lb-row-4" class="lb-row"></span>
+  <span id="lb-row-0" class="lb-row">-</span>
+  <span id="lb-row-1" class="lb-row">-</span>
+  <span id="lb-row-2" class="lb-row">-</span>
+  <span id="lb-row-3" class="lb-row">-</span>
+  <span id="lb-row-4" class="lb-row">-</span>
   <button id="play-again" class="action-button">Play Again</button>
   <button id="replace-board" class="action-button">Replace Board</button>
   <button id="xr-button" class="action-button">Enter XR</button>
